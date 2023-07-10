@@ -33,19 +33,18 @@ def get_page_from(url):
 class Model():
     # TODO cache data so that we don't have
     # to fetch over the network all the time
-    # 
-    # For now, cache everything. 
+    #
+    # For now, cache everything.
     # Later, evict entries
-
 
     def fetch_data():
         print(st.session_state['current_page'])
         current_page = get_page_from(st.session_state['current_page'])
-        print("current page:", current_page) 
+        print("current page:", current_page)
 
         if current_page in st.session_state['cache']:
             print("Found it in the cache!")
-            return st.session_state.cache[current_page] 
+            return st.session_state.cache[current_page]
         else:
             print("Cache page!")
             response = requests.get(st.session_state['current_page'])
@@ -53,16 +52,41 @@ class Model():
             st.session_state.cache[current_page] = object
             return object
 
+def navigation(current_page, label):
+    cols = st.columns(5)
+
+    with cols[0]:
+        disable_prev = st.session_state['prev_page'] is None
+        st.button("Previous Page", disabled=disable_prev,
+                  on_click=get_prev_page, key=f"prev-page-button-{label}")
+
+    with cols[2]:
+        message = "{} of {}".format(current_page, st.session_state['pages'])
+        st.write(message)
+
+    with cols[4]:
+        disable_next = st.session_state['next_page'] is None
+        st.button("Next Page", disabled=disable_next, on_click=get_next_page, key=f"next-page-button-{label}")
+
 
 def render_view(object):
     # print("render_view:")
     # pp.pprint(object)
 
-    st.sidebar.title("Ricky and Morty API Test Drive")
-    st.sidebar.caption("work in progress...")
-    st.sidebar.divider()
-    st.sidebar.markdown(f"* Streamlit {st.__version__}")
-    st.sidebar.markdown(f"* Python {platform.python_version()}")
+    st.set_page_config(page_title="Rick and Morty API",
+                       page_icon="🤔", layout="centered",
+                       initial_sidebar_state="auto", menu_items=None)
+
+    with st.sidebar:
+        st.title("Ricky and Morty API Test Drive")
+        st.caption("work in progress...")
+        st.radio("View:", ["Characters", "Episodes", "Locations"])
+        st.divider()
+        st.caption("App Components:")
+        st.markdown(f"""
+        * Streamlit {st.__version__}
+        * Python {platform.python_version()}
+        """)
 
     st.session_state['next_page'] = object['info']['next']
     st.session_state['prev_page'] = object['info']['prev']
@@ -74,19 +98,7 @@ def render_view(object):
 
     current_page = get_page_from(st.session_state['current_page'])
 
-    cols = st.columns(5)
-
-    with cols[0]:
-        disable_prev = st.session_state['prev_page'] is None
-        st.button("Previous Page", disabled=disable_prev, on_click=get_prev_page)
-
-    with cols[2]:
-        message = "{} of {}".format(current_page, st.session_state['pages'])
-        st.write(message)
-
-    with cols[4]:
-        disable_next = st.session_state['next_page'] is None
-        st.button("Next Page", disabled=disable_next, on_click=get_next_page)
+    navigation(current_page, "top")
 
     chars = object["results"]
     for i in range(0, len(chars), 5):
@@ -95,9 +107,12 @@ def render_view(object):
         try:
             for n in range(0, 5):
                 with cols[n]:
-                    st.image(chunk[n]['image'], width=100)
+                    st.image(chunk[n]['image'])
+                    st.text(chunk[n]['name'])
         except Exception as e:
             print("An error occurred:", e)
+
+    navigation(current_page, "bottom")
 
 
 def get_prev_page():
