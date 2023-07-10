@@ -57,7 +57,7 @@ def navigation(current_page, label):
 
     with cols[0]:
         disable_prev = st.session_state['prev_page'] is None
-        st.button("Previous Page", disabled=disable_prev,
+        st.button("◀️", disabled=disable_prev,
                   on_click=get_prev_page, key=f"prev-page-button-{label}")
 
     with cols[2]:
@@ -66,7 +66,7 @@ def navigation(current_page, label):
 
     with cols[4]:
         disable_next = st.session_state['next_page'] is None
-        st.button("Next Page", disabled=disable_next, on_click=get_next_page, key=f"next-page-button-{label}")
+        st.button("▶️", disabled=disable_next, on_click=get_next_page, key=f"next-page-button-{label}")
 
 
 def render_view(object):
